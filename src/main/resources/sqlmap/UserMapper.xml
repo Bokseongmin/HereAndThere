@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.UserMapper">
+
+    <insert id="signUp" parameterType="com.mz.hat.vo.UserVo">
+        INSERT INTO users (user_name, user_email, user_pass, user_region, reg_date)
+        VALUES (#{user_name}, #{user_email}, #{user_pass}, #{user_region}, now())
+    </insert>
+
+    <select id="signIn" resultType="com.mz.hat.vo.UserVo">
+        SELECT id, user_name, user_email, user_pass, user_region
+        FROM users
+        WHERE user_email = #{user_email} AND user_pass = #{user_pass}
+    </select>
+
+    <update id="updateProfile" parameterType="com.mz.hat.vo.UserVo">
+        UPDATE users
+        SET
+        <if test="user_name != null and user_name != ''">
+            username = #{user_name},
+        </if>
+        <if test="user_pass != null and user_pass != ''">
+            password = #{user_pass},
+        </if>
+        <if test="user_region != null and user_region != ''">
+            company = #{user_region},
+        </if>
+        updatedAt = now()
+        WHERE id = #{user_email}
+    </update>
+
+    <delete id="withdraw" parameterType="com.mz.hat.vo.UserVo">
+        DELETE FROM users
+        WHERE id = #{id}
+    </delete>
+
+    <select id="selectUser" resultType="com.mz.hat.vo.UserVo">
+        SELECT id, user_name, user_email, user_pass, user_region
+        FROM users
+        WHERE user_email = #{user_email}
+    </select>
+</mapper>
