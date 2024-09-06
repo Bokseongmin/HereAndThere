@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.ReviewMapper">
+
+    <select id="top10" resultType="com.mz.hat.vo.ReviewVo">
+        SELECT id, title, tourist_attr_name, user_name, content, likes, reg_date, mod_date, likes
+        FROM reviews
+        ORDER BY likes DESC
+        LIMIT 10;
+    </select>
+
+    <select id="list" resultType="com.mz.hat.vo.ReviewVo">
+        SELECT id, title, tourist_attr_name, user_name, content, reg_date, mod_date, likes
+        FROM reviews
+        ORDER BY reg_date DESC
+    </select>
+    
+    <insert id="write" parameterType="com.mz.hat.vo.ReviewVo">
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO reviews(title, tourist_attr_name, user_name, content, reg_date)
+        VALUES (#{title}, #{tourist_attr_name}, #{user_name}, #{content}, now())
+    </insert>
+
+    <select id="detail" resultType="com.mz.hat.vo.ReviewVo">
+        SELECT id, title, tourist_attr_name, user_name, content, reg_date, mod_date, likes
+        FROM reviews
+        WHERE id = #{id}
+    </select>
+</mapper>

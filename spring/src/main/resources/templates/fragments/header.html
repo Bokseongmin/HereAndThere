@@ -1,0 +1,183 @@
+<header class="bg-light p-3" th:fragment="header">
+    <div class="container">
+        <div class="row align-items-center">
+            <!-- 로고 -->
+            <div class="col-auto">
+                <a href="/">
+                    <img class="bi me-2" src="/img/icon.png" alt="icon" width="48" height="48">
+                </a>
+            </div>
+            <!-- 검색 -->
+            <div class="col">
+                <div class="d-flex row align-items-center">
+                    <div class="col d-flex align-items-center">
+                        <div class="input-group align-items-center" style="position: relative;">
+                            <input type="text" class="form-control" id="search_input" placeholder="Here And There"
+                                   aria-label="Here And There" aria-describedby="search_btn">
+                            <ul class="dropdown-menu w-100" id="search_list" style="position: absolute; top: 100%;">
+                            </ul>
+                            <button class="btn btn-primary" type="button" id="search_btn">검색</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                $(function () {
+                    function search_box() {
+                        var p = $(this).parent(".input-group");
+                        if ($(this).val().length > 0 && !p.hasClass("open")) {
+                            var keyword = $(this).val().trim();
+                            $.ajax({
+                                type: "GET",
+                                url: "/together/write/get/tourist/" + keyword,
+                                success: function (response) {
+                                    var tour_lists = response.body;
+                                    var list = $("#search_list");
+                                    list.empty();
+                                    for (var i = 0; i < tour_lists.length; i++) {
+                                        var html = "";
+                                        html += "<li><a class='dropdown-item' href='/tourist/" + tour_lists[i].id + "'>" + tour_lists[i].name + "</a></li>";
+                                        list.append(html);
+                                    }
+                                    list.show();
+                                },
+                                error: function (xhr, status, error) {
+                                    console.log(xhr.responseText);
+                                }
+                            });
+                        } else if ($(this).val().length === 0) {
+                            $("#search_list").empty().hide();
+                        }
+                    }
+
+                    $("#search_input").on("keyup keydown", search_box);
+                });
+                $("#search_btn").click(function () {
+                    var keyword = $("#search_input").val().trim();
+                    if (keyword !== "") {
+                        // Perform AJAX request for search
+                        $.ajax({
+                            url: "/search",
+                            method: "GET",
+                            data: {keyword: keyword},
+                            success: function (response) {
+                                $("#cards").empty();
+                                var item = response.body;
+                                var imageSrc = "";
+                                if (item.img && item.img.length > 0) {
+                                    imageSrc = "images/" + item.img[0].image_path;
+                                }
+
+                                var cardHtml = ""
+                                cardHtml += "<div class='col'>";
+                                cardHtml += "<div class='card' style='height: 100%'>";
+                                cardHtml += "<img src='" + imageSrc + "' class='card-img-top' alt='...' style='width: 100%; height: 12em; object-fit: cover;'>";
+                                cardHtml += "<div class='card-body'>";
+                                cardHtml += "<h5 class='card-title'>" + item.name + "</h5>";
+                                cardHtml += "<p class='card-text'>" + item.content + "</p>";
+
+                                var maxLength = 50; // 최대 글자 수
+
+                                $("p").each(function () {
+                                    var content = $(this).text();
+                                    if (content.length > maxLength) {
+                                        var truncatedContent = content.substr(0, maxLength) + " ...";
+                                        $(this).text(truncatedContent);
+                                    }
+                                });
+                                cardHtml += "</div>";
+                                cardHtml += "<ul class='list-group list-group-flush'>";
+
+                                cardHtml += "<li class='list-group-item'>" + item.category_name + "</li>";
+                                cardHtml += "<li class='list-group-item'>" + item.road_address + "</li>";
+                                cardHtml += "<li class='list-group-item'>" + item.tel + "</li>";
+                                cardHtml += "</ul>";
+                                cardHtml += "<div class='card-body'>";
+                                cardHtml += "<a href='/tourist/" + item.id + "' class='card-link'>정보</a>";
+                                cardHtml += "</div>";
+                                cardHtml += "</div>";
+                                $("#cards").append(cardHtml);
+
+                            },
+                            error: function (xhr, status, error) {
+                                console.error(xhr.responseText);
+                            }
+                        });
+                    }
+                });
+
+                $("#tourist_list_search_list").on("click", ".items", function () {
+                    var selected = $(this).text();
+                    $("#tourist_list_search_list").empty();
+                    $("#search_input").val(selected);
+                });
+            </script>
+            <!-- nav -->
+            <div class="col-auto">
+                <nav class="nav">
+                    <a class="nav-link" href="/region">지역별</a>
+                    <a class="nav-link" href="/board">게시글</a>
+                    <a class="nav-link" href="/review">리뷰</a>
+                    <a class="nav-link" href="/course">코스</a>
+                    <a class="nav-link" href="/together">동행</a>
+                </nav>
+            </div>
+            <!-- User Icon -->
+            <div class="col-auto">
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary" type="button" id="userMenu"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <div th:if="${session.user == null}">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div th:if="${session.user != null}">
+                            <th:block th:if="${session.user.user_img != null}">
+                                <img th:src="'/img/' + ${session.user.user_img}" class="rounded-circle" width="32"
+                                     height="32" alt="...">
+                            </th:block>
+                            <th:block th:if="${session.user.user_img == null}">
+                                <svg width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="64" cy="64" r="64" fill="#d3d3d3"/>
+                                </svg>
+                            </th:block>
+                        </div>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <div th:if="${session.user == null}">
+                            <li><a class="dropdown-item" href="/account/sign/in">로그인</a></li>
+                            <li><a class="dropdown-item" href="/account/sign/up">회원가입</a></li>
+                        </div>
+                        <div th:if="${session.user != null}">
+                            <li th:if="${session.user.role == 'ADMIN'}">
+                                <a class="dropdown-item" href="/admin/dashboard">관리모드</a>
+                            </li>
+                            <li><a class="dropdown-item" href="/account/sign/profile">내 프로필</a></li>
+                            <li><a class="dropdown-item">관리</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" id="signOut" type="button">로그아웃</a>
+                                <script>
+                                    $("#signOut").click(function () {
+                                        $.ajax({
+                                            type: "GET",
+                                            url: "/account/sign/out",
+                                            success: function (result) {
+                                                window.location.href = "/";
+                                            },
+                                            error: function (xhr, status, error) {
+                                                var html = "<p class='text-danger'>아이디 또는 비밀번호가 올바르지 않습니다.</p>"
+                                                $("#errorMsg").html(html);
+                                            }
+                                        });
+                                    });
+                                </script>
+                            </li>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

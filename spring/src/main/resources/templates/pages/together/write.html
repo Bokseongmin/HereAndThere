@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <!-- CK Editor -->
+    <script th:src="@{/js/ckEditor/build/ckeditor.js}"></script>
+    <script th:src="@{/js/ckEditor/ckeditor5-image/build/image.js}"></script>
+    <script th:src="@{/js/ckEditor/UploadAdapter.js}"></script>
+
+    <style>
+        .ck-editor__editable {
+            min-height: 20em;
+        }
+
+        .ck-editor__editable p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+    </div>
+    <main class="container">
+        <div class="d-flex row justify-content-center mt-3">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label for="title" class="form-label">제목</label>
+                    <input type="text" class="form-control" id="title" name="title" placeholder="제목">
+                </div>
+                <div class="mb-3">
+                    <label for="region" class="form-label">지역</label>
+                    <input type="text" class="form-control" id="region" name="region" placeholder="지역">
+                </div>
+                <div class="mb-3">
+                    <textarea rows="100" cols="100" id="course_content" name="course_content"></textarea>
+                    <script>
+                        let test;
+
+                        function MyCustomUploadAdapterPlugin(editor) {
+                            editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+                                return new UploadAdapter(loader)
+                            }
+                        }
+
+                        ClassicEditor.create(document.querySelector("#course_content"), {
+                            resizeOptions: [
+                                {
+                                    name: 'resizeImage:original',
+                                    value: null,
+                                    label: 'Original'
+                                }
+                            ],
+                            language: "ko",
+                            extraPlugins: [MyCustomUploadAdapterPlugin]
+                        }).then(editor => {
+                            window.editor = editor;
+                        }).catch(error => {
+                            console.error(error);
+                        });
+                    </script>
+                </div>
+                <div class="mb-3">
+                    <label for="departure_date" class="form-label">출발일</label>
+                    <input type="datetime-local" class="form-control" id="departure_date" name="departure_date">
+                </div>
+                <div class="mb-3">
+                    <label for="arrival_date" class="form-label">도착일</label>
+                    <input type="datetime-local" class="form-control" id="arrival_date" name="arrival_date"
+                           placeholder="도착일">
+                </div>
+                <div class="mb-3">
+
+                </div>
+                <a class="btn btn-primary w-100" id="submit_btn">등록</a>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        load_course();
+        $("#submit_btn").click(function () {
+            var routes = "";
+            $("#route .route").each(function () {
+                var dataName = $(this).attr("data-name");
+                routes += dataName + " ";
+            });
+
+            var formData = {
+                title: $("#title").val(),
+                user_id: $("#user_id").val(),
+                region: $("#region").val(),
+                content: $("#content").val(),
+                departure_date: $("#departure_date").val(),
+                arrival_date: $("#arrival_date").val(),
+                routes: routes
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/together/write",
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    window.location.href = "/together/list";
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+
+        $("#_tourist_list_search").keyup(function () {
+            var tourist_attr = $(this).val();
+
+            $.ajax({
+                type: "GET",
+                url: "/together/write/get/tourist/" + tourist_attr,
+                success: function (response) {
+                    var tour_lists = response.body;
+                    var list = $("#_tourist_list_search_list");
+                    list.empty();
+                    for (var i = 0; i < tour_lists.length; i++) {
+                        var _item = $("<div>").text(tour_lists[i].name);
+                        _item.addClass("items");
+                        list.append(_item);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
+        $("#_tourist_list_search_list").on("click", ".items", function () {
+            var selected = $(this).text();
+            var routes = $("#route");
+            var _route = $("<div>").text(selected);
+            _route.addClass("route");
+            _route.attr("data-name", selected);
+            routes.append(_route);
+            $("#_tourist_list_search_list").empty();
+            $("#_tourist_list_search").val("");
+        });
+
+        $(document).on("click", ".route", function () {
+            $(this).remove();
+        });
+    });
+
+    function load_course() {
+        $.ajax({
+            type: "GET",
+            url: "/course/list",
+            success: function (response) {
+                console.log(response);
+            },
+            error: function (xhr, status, error) {
+
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.ImageMapper">
+
+    <insert id="insert_image" parameterType="com.mz.hat.vo.ImageVo">
+        INSERT INTO images (image_name, image_path, image_type, reg_date, ref_id)
+        VALUES (#{image_name}, #{image_path}, #{image_type}, now(), #{ref_id})
+    </insert>
+
+    <select id="get_image" resultType="com.mz.hat.vo.ImageVo">
+        SELECT id, image_name, image_path, image_type, reg_date, ref_id
+        FROM images
+        WHERE image_type = #{image_type} AND ref_id = #{ref_id}
+    </select>
+</mapper>

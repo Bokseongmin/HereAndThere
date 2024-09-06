@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+    </div>
+    <main class="container mt-3">
+        <div class="d-flex row justify-content-sm-center">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <h2 class="fw-bold" th:text="${course.title}"></h2>
+                </div>
+                <div class="d-flex w-100 align-items-center justify-content-between">
+                    <img th:src="'/img/' + ${course_user.user_img}" class="rounded-circle" width="32"
+                         height="32" alt="...">
+                    <span th:text="${course_user.user_name}"></span>
+                    <small th:text="${#temporals.format(course.regdate, 'yyyy-MM-dd HH:mm:ss')}"></small>
+                </div>
+                <div class="mb-3">
+                    <p th:utext="${course.content}"></p>
+                </div>
+                <div class="mb-3">
+                    <div id="map" style="width:100%;height:350px;"></div>
+                </div>
+
+                <!-- 댓글 -->
+                <div class="mb-3">
+                    <h2 class="fw-bold">댓글</h2>
+                    <div class="row mt-3">
+                        <div class="col-11 form-floating">
+                    <textarea class="form-control" placeholder="Leave a comment here" id="reply_text"
+                              style="height: 100px; resize: none"></textarea>
+                            <label for="reply_text">최대 100자까지 댓글을 남겨보세요!</label>
+                        </div>
+                        <div class="col-1 m-0">
+                            <button class="btn btn-primary w-100" id="reply_btn" style="height: 100px;">확인</button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="my-3 p-3 bg-body rounded shadow-sm">
+                            <h6 class="border-bottom pb-2 mb-0"></h6>
+                            <div class="" id="reply_list">
+                            </div>
+                            <small class="d-block text-end mt-3">
+                                <a href="#"></a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script th:inline="javascript">
+    var course_data = /*[[${course.coords}]]*/ [];
+</script>
+<script>
+    $(function () {
+        load_replys();
+        $("#reply_btn").click(function () {
+            var content = $("#reply_text").val();
+            $.ajax({
+                type: "POST",
+                url: "/reply/course/" + [[${course.id}]],
+                data: JSON.stringify({
+                    content: content
+                }),
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                    if (response.head.result_code === "200") {
+                        alert("댓글이 성공적으로 등록되었습니다.");
+                        window.location.reload();
+                    } else {
+                        alert("댓글 등록 중 오류가 발생했습니다.")
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                }
+            })
+        });
+    });
+    function load_replys() {
+        $.ajax({
+            type: "GET",
+            url: "/reply/course/" + [[${course.id}]],
+            success: function (response) {
+                var list = "";
+                $.each(response.body, function (index, item) {
+                    list += "<div class='d-flex text-body-secondary pt-3'>";
+                    list += "    <svg class='bd-placeholder-img flex-shrink-0 me-2 rounded' width='32' height='32'";
+                    list += "         xmlns='http://www.w3.org/2000/svg' role='img' aria-label='Placeholder: 32x32'";
+                    list += "         preserveAspectRatio='xMidYMid slice' focusable='false'><title>" + item.user_name + "</title>";
+                    list += "        <rect width='100%' height='100%' fill='#007bff'></rect>";
+                    list += "        <text x='50%' y='50%' fill='#007bff' dy='.3em'>32x32</text>";
+                    list += "    </svg>";
+                    list += "    <div class='pb-3 mb-0 small lh-sm border-bottom w-100'>";
+                    list += "        <div class='d-flex justify-content-between'>";
+                    list += "            <strong class='text-gray-dark'>" + item.user_name + "</strong>";
+                    list += "            <a>" + converter_date(item.regdate) + "</a>";
+                    list += "        </div>";
+                    list += "        <span class='d-block'>" + item.content + "</span>";
+                    list += "    </div>";
+                    list += "</div>";
+                });
+                $("#reply_list").html(list);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error:", error);
+            }
+        })
+    }
+    var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+        mapOption = {
+            center: new kakao.maps.LatLng(course_data[0].lat, course_data[0].lng), // 지도의 중심좌표
+            level: 3 // 지도의 확대 레벨
+        };
+
+    var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+    // 마커를 표시할 위치와 title 객체 배열입니다
+    var positions = [];
+    $.each(course_data, function (i, item) {
+        positions.push({
+            title: i,
+            latlng: new kakao.maps.LatLng(item.lat, item.lng)
+        });
+    });
+
+    // 마커 이미지의 이미지 주소입니다
+    var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
+
+    for (var i = 0; i < positions.length; i ++) {
+
+        // 마커 이미지의 이미지 크기 입니다
+        var imageSize = new kakao.maps.Size(24, 35);
+
+        // 마커 이미지를 생성합니다
+        var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+
+        // 마커를 생성합니다
+        var marker = new kakao.maps.Marker({
+            map: map, // 마커를 표시할 지도
+            position: positions[i].latlng, // 마커를 표시할 위치
+            title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+            image : markerImage // 마커 이미지
+        });
+    }
+</script>
+</body>
+</html>

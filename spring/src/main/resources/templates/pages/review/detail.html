@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <!-- GOOGLE -->
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${apiKey}"></script>
+    <!-- Swiper -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-element-bundle.min.js"></script>
+    <style>
+        swiper-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        swiper-container {
+            width: 100%;
+            height: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        swiper-slide {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .mySwiper {
+            height: 80%;
+            width: 100%;
+        }
+
+        .mySwiper2 {
+            height: 20%;
+            box-sizing: border-box;
+            padding: 10px 0;
+        }
+
+        .mySwiper2 swiper-slide {
+            width: 25%;
+            height: 100%;
+            opacity: 0.4;
+        }
+
+        .mySwiper2 .swiper-slide-thumb-active {
+            opacity: 1;
+        }
+
+        swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <header th:replace="fragments/header :: header"></header>
+    <main class="container">
+        <form>
+            <div class="mb-3">
+                <label for="title" class="form-label">제목</label>
+                <input type="text" class="form-control" id="title" name="title" th:value="${review.title}"
+                       placeholder="제목" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="user_name" class="form-label">작성자</label>
+                <input type="text" class="form-control" id="user_name" name="user_name" th:value="${review.user_name}"
+                       disabled>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">내용</label>
+                <input type="text" class="form-control" id="content" name="content" th:value="${review.content}"
+                       disabled>
+            </div>
+            <div class="mb-3">
+                <label for="tourist_attr_name" class="form-label">관광지</label>
+                <input type="text" class="form-control" id="tourist_attr_name" name="tourist_attr_name"
+                       th:value="${review.tourist_attr_name}" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="likes" class="form-label">좋아요</label>
+                <input type="text" class="form-control" id="likes" name="likes"
+                       th:value="${review.likes}" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="reg_date" class="form-label">작성일</label>
+                <input type="text" class="form-control" id="reg_date" name="reg_date"
+                       th:value="${review.reg_date}" disabled>
+            </div>
+            <div class="mb-3" id="swiper">
+                <swiper-container style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff" class="mySwiper" thumbs-swiper=".mySwiper2" space-between="10" navigation="true">
+                    <th:block th:each="image : ${images}">
+                        <swiper-slide>
+                            <img th:src="@{'/images/' + ${image.image_path}}" />
+                        </swiper-slide>
+                    </th:block>
+                </swiper-container>
+
+                <swiper-container class="mySwiper2" space-between="10" slides-per-view="4" free-mode="true" watch-slides-progress="true">
+                    <th:block th:each="image : ${images}">
+                        <swiper-slide>
+                            <img th:src="@{'/images/' + ${image.image_path}}" />
+                        </swiper-slide>
+                    </th:block>
+                </swiper-container>
+            </div>
+            <div class="mb-3" id="map_window">
+                <div id="map" style="height: 500px">
+
+                </div>
+            </div>
+        </form>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        var route = $("#tourist_attr_name").attr("value");
+        $.ajax({
+            type: "GET",
+            url: "/route/cord/get",
+            data: {route: route},
+            success: function (response) {
+                var routes = response.body;
+
+                var routes_cord = [];
+
+                for (var i = 0; i < routes.length; i++) {
+                    var cord = {
+                        title: routes[i].name,
+                        lat: parseFloat(routes[i].lat),
+                        lng: parseFloat(routes[i].lng)
+                    }
+                    routes_cord.push(cord);
+                }
+                // 표시할 위치
+                var myLatLng = {lat: routes_cord[0].lat, lng: routes_cord[0].lng};
+
+                // 지도 옵션 설정
+                var mapOptions = {
+                    zoom: 13,
+                    center: myLatLng
+                };
+
+                // 구글 맵 생성
+                var map = new google.maps.Map($("#map")[0], mapOptions);
+
+                for(var i = 0; i < routes_cord.length; i++) {
+                    // 마커 생성
+                    var marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(routes_cord[i].lat, routes_cord[i].lng),
+                        map: map,
+                        title: routes_cord[i].title
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+</script>
+</body>
+</html>

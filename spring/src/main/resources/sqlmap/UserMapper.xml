@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.UserMapper">
+
+    <!-- 회원가입 -->
+    <insert id="signUp" parameterType="UserVo">
+        INSERT INTO users (user_name, user_email, user_pass, user_region, reg_date)
+        VALUES (#{user_name}, #{user_email}, #{user_pass}, #{user_region}, now())
+    </insert>
+
+    <!-- 로그인 -->
+    <select id="signIn" resultType="UserVo">
+        SELECT *
+        FROM users
+        WHERE user_email = #{user_email} AND user_pass = #{user_pass}
+    </select>
+
+    <!-- 회원 정보 -->
+    <select id="get_user" resultType="UserVo">
+        SELECT *
+        FROM users
+        WHERE user_email = #{user_email};
+    </select>
+
+    <select id="info" resultType="UserVo">
+        SELECT *
+        FROM users
+        WHERE id = #{id};
+    </select>
+
+    <!-- 회원 정보 요약 -->
+    <select id="summary" parameterType="int" resultType="UserVo">
+        SELECT user_img, user_name, user_region, role, reg_date
+        FROM users
+        WHERE id = #{id}
+    </select>
+
+    <!-- 회원 탈퇴 -->
+    <delete id="withdraw" parameterType="UserVo">
+        DELETE FROM users
+        WHERE id = #{id}
+    </delete>
+
+    <!-- 이메일 중복 확인 -->
+    <select id="email_check" parameterType="UserVo" resultType="int">
+        SELECT COUNT(*)
+        FROM users
+        WHERE user_email = #{user_email}
+    </select>
+
+    <!-- 프로필 사진 변경 -->
+    <update id="insertUserProfileImg" parameterType="map">
+        UPDATE users
+        SET user_img = #{user_img}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 회원 정보 변경 -->
+    <update id="updateUserProfile" parameterType="UserVo">
+        UPDATE users
+        SET
+        <if test="user_name != null and user_name != ''">
+            user_name = #{user_name},
+        </if>
+        <if test="user_pass != null and user_pass != ''">
+            user_pass = #{user_pass},
+        </if>
+        mod_date = now()
+        WHERE id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,28 @@
+
+# eclipse
+.settings/
+.classpath
+.project
+
+# android studio
+.idea/
+
+
+# not use xcode project
+native/
+
+# generation folders..
+.gradle/
+bin/
+gen/
+
+# build folder
+build/
+
+# android sdk
+local.properties
+
+# etc
+.DS_Store
+.blank
+

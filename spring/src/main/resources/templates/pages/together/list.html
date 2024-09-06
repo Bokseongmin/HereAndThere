@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <header th:replace="fragments/header :: header"></header>
+    <main class="container">
+        <div class="d-flex row justify-content-center">
+            <div class="col-md-8">
+                <div class="table-responsive">
+                    <table class="table table-hover align-content-center justify-content-center text-center">
+                        <colgroup>
+                            <col width="5%" />
+                            <col width="30%" />
+                            <col width="10%" />
+                            <col width="20%" />
+                            <col width="20%" />
+                            <col width="10%" />
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>제목</th>
+                            <th>작성자</th>
+                            <th>출발일</th>
+                            <th>도착일</th>
+                            <th>참가자</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="get_list">
+                    </table>
+                    <br>
+                    <div class="d-flex justify-content-end">
+                        <a class="btn btn-danger">글삭제</a>
+                        <a href="/together/write" class="btn btn-primary">글쓰기</a>
+                    </div>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        $.ajax({
+            type: "GET",
+            url: "/together/list/get",
+            success: function (response) {
+                var together_list = response.body;
+                var html = "";
+                for (var i = 0; i < together_list.length; i++) {
+                    var together = together_list[i];
+                    html += "<tr class='align-content-center justify-content-center text-center' id='item-" + together.id + "'>";
+                    html += "<td>" + together.id + "</td>";
+                    html += "<td>" + together.title + "</td>";
+                    html += "<td>" + together.user_name + "</td>";
+                    html += "<td>" + together.departure_date + "</td>";
+                    html += "<td>" + together.arrival_date + "</td>";
+                    html += "<td>" + together.guests + "</td>";
+                    html += "</tr>";
+                }
+                $("#get_list").html(html);
+
+                $("tr.align-content-center.justify-content-center.text-center").click(function() {
+                    // 클릭된 tr의 id에서 게시글의 ID를 추출
+                    var id = $(this).attr("id").split("-")[1];
+                    // 게시글 상세 페이지로 이동
+                    window.location.href = "/together/" + id;
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+</script>
+</body>
+</html>

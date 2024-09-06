@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.CategoryMapper">
+
+    <select id="list" resultType="com.mz.hat.vo.CategoryVo">
+        SELECT id, name, code, code_ref, icon
+        FROM category;
+    </select>
+
+    <select id="category_page" resultType="com.mz.hat.vo.TouristAttrVo">
+        SELECT id, category_name, region_id, name, content, road_address, parcel_address, lat, lng, tel, assigned_date, reg_date, mod_date
+        FROM tourist_attrs
+        WHERE category_name LIKE CONCAT('%', #{category_name}, '%')
+    </select>
+</mapper>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Morpheus -->
+    <script th:src="@{/js/morpheus/mcore.min.js}"></script>
+    <!-- Bootstrap5 JS-->
+    <script th:src="@{/js/bootstrap.bundle.min.js}" type="text/javascript"></script>
+    <!-- JQuery -->
+    <script th:src="@{/js/jquery-3.6.4.min.js}" type="text/javascript"></script>
+    <!-- font-awesome -->
+    <script src="https://kit.fontawesome.com/5e050dc510.js" crossorigin="anonymous"></script>
+    <!-- KAKAO -->
+    <script type="text/javascript" th:src="@{'//dapi.kakao.com/v2/maps/sdk.js?appkey=' + ${appKey} + '&libraries=clusterer'}"></script>
+
+    <script th:src="@{/js/main.js}"></script>
+
+    <!-- Bootstrap5 CSS-->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css">
+</th:block>

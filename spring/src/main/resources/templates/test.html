@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<header th:fragment="header">
+    <div class="row py-3">
+        <div class="col">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+                <img class="bi me-2" src="/img/icon.png" alt="icon" width="64" height="64">
+            </a>
+        </div>
+        <div class="col d-flex align-items-center">
+            <div class="input-group align-items-center">
+                <input type="text" class="form-control" placeholder="Here And There" aria-label="Here And There"
+                       aria-describedby="search_btn">
+                <button class="btn btn-primary" type="button" id="search_btn">검색</button>
+            </div>
+        </div>
+        <div class="col d-flex justify-content-end align-items-center">
+            <div class="col">
+                <nav class="nav">
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/board/list">게시글</a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/review/list">리뷰</a>
+                        </li>
+                    </ul>
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/together/list">동행</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col">
+                <div class="dropdown justify-content-end">
+                    <a href="#" class="d-block link-white text-decoration-none text-end dropdown-toggle"
+                       id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div th:if="${session.user != null}">
+                            <div th:if="${session.user.user_img == null}">
+                                <i class="fa-solid fa-user fa-2xl"></i>
+                            </div>
+                            <div th:if="${session.user.user_img != null}">
+                                <img th:src="${session.user.user_img}" alt="mdo"
+                                     width="32" height="32" class="rounded-circle">
+                            </div>
+                        </div>
+                        <i th:if="${session.user == null}" class="fa-solid fa-user fa-2xl"></i>
+                        <p class="text-white d-inline-block ml-2" th:if="${session.user}"
+                           style="align-self: center;"></p>
+                    </a>
+                    <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1" style="">
+                        <div th:if="${session.user == null}">
+                            <li><a class="dropdown-item" href="/account/sign/in">로그인</a></li>
+                            <li><a class="dropdown-item" href="/account/sign/up">회원가입</a></li>
+                        </div>
+                        <div th:if="${session.user != null}">
+                            <li><a class="dropdown-item" href="/account/sign/edit">내 프로필</a></li>
+                            <li><a class="dropdown-item">관리</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" id="signOut" type="button">로그아웃</a>
+                                <script>
+                                    $("#signOut").click(function () {
+                                        $.ajax({
+                                            type: "GET",
+                                            url: "/account/sign/out",
+                                            success: function (result) {
+                                                window.location.href = "/";
+                                            },
+                                            error: function (xhr, status, error) {
+                                                var html = "<p class='text-danger'>아이디 또는 비밀번호가 올바르지 않습니다.</p>"
+                                                $("#errorMsg").html(html);
+                                            }
+                                        });
+                                    });
+                                </script>
+                            </li>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

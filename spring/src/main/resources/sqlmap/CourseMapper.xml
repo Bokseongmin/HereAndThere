@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.CourseMapper">
+    <insert id="insertCourse" parameterType="CourseVo">
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO course(img ,user_id, title, content, distance, regdate)
+        VALUES (#{img}, #{user_id}, #{title}, #{content}, #{distance}, now())
+    </insert>
+
+    <select id="findAll" resultType="CourseVo">
+        SELECT *
+        FROM course
+        ORDER BY id
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="course_cnt" resultType="int">
+        SELECT COUNT(*)
+        FROM course
+    </select>
+
+    <select id="findById" parameterType="int" resultType="CourseVo">
+        SELECT *
+        FROM course
+        WHERE id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <!-- GOOGLE -->
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${apiKey}"></script>
+</head>
+<body>
+<div class="container">
+    <header th:replace="fragments/header :: header"></header>
+    <main>
+        <form id="tour_detail">
+            <div class="mb-3">
+                <label for="name" class="form-label">제목</label>
+                <input type="text" class="form-control" id="name" name="name" th:value="${tour.name}"
+                       placeholder="제목">
+                <input type="text" hidden="hidden" id="id" name="id" th:value="${tour.id}">
+            </div>
+            <div class="mb-3">
+                <label for="category_name" class="form-label">카테고리</label>
+                <input type="text" class="form-control" id="category_name" name="category_name" th:value="${tour.category_name}"
+                       >
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">내용</label>
+                <input type="text" class="form-control" id="content" name="content" th:value="${tour.content}"
+                       >
+            </div>
+            <div class="mb-3">
+                <label for="road_address" class="form-label">도로명 주소</label>
+                <input type="text" class="form-control" id="road_address" name="road_address"
+                       th:value="${tour.road_address}" >
+            </div>
+            <div class="mb-3">
+                <label for="reg_date" class="form-label">등록일</label>
+                <input type="text" class="form-control" id="reg_date" name="reg_date"
+                       th:value="${tour.reg_date}" disabled>
+            </div>
+            <div class="mb-3">
+                <label for="tel" class="form-label">전화번호</label>
+                <input type="text" class="form-control" id="tel" name="tel"
+                       th:value="${tour.tel}">
+            </div>
+            <button type="submit" class="form-control btn btn-primary mb-3" id="add_board">변경 완료</button>
+            <div class="mb-3">
+                <label class="form-label" for="file_name">사진</label>
+                <input type="file" class="form-control" id="file_name" name="file_name" accept=".jpg, .png">
+            </div>
+        </form>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        var route = $("#name").attr("value");
+        $.ajax({
+            type: "GET",
+            url: "/route/cord/get",
+            data: {route: route},
+            success: function (response) {
+                var routes = response.body;
+
+                var routes_cord = [];
+
+                for (var i = 0; i < routes.length; i++) {
+                    var cord = {
+                        title: routes[i].name,
+                        lat: parseFloat(routes[i].lat),
+                        lng: parseFloat(routes[i].lng)
+                    }
+                    routes_cord.push(cord);
+                }
+                // 표시할 위치
+                var myLatLng = {lat: routes_cord[0].lat, lng: routes_cord[0].lng};
+
+                // 지도 옵션 설정
+                var mapOptions = {
+                    zoom: 13,
+                    center: myLatLng
+                };
+
+                // 구글 맵 생성
+                var map = new google.maps.Map($("#map")[0], mapOptions);
+
+                for(var i = 0; i < routes_cord.length; i++) {
+                    // 마커 생성
+                    var marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(routes_cord[i].lat, routes_cord[i].lng),
+                        map: map,
+                        title: routes_cord[i].title
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        $("#tour_detail").submit(function (e) {
+            e.preventDefault(); // 폼 제출 기본 동작 중단
+
+            var form_data = new FormData();
+
+            var name = $("#name").val(); // 제목 필드의 값을 가져옴
+            var id = $("#id").val();
+            var category_name = $("#category_name").val();
+            var content = $("#content").val();
+            var road_address = $("#road_address").val();
+            var file_name = $("#file_name"); // 파일 필드에서 선택된 파일을 가져옴
+
+            var data = {
+                id: id,
+                name: name,
+                category_name: category_name,
+                content: content,
+                road_address: road_address
+            };
+
+            for (var i = 0; i < file_name.length; i++) {
+                if (file_name[i].files.length > 0) {
+                    for (var j = 0; j < file_name[i].files.length; j++) {
+                        form_data.append("file_name", $("#file_name")[i].files[j]);
+                    }
+                }
+            }
+            form_data.append("tour_detail", new Blob([JSON.stringify(data)], {type: "application/json"}));
+            $.ajax({
+                type: "POST",
+                url: "/admin/tour_list/" + id,
+                data: form_data,
+                contentType: false,
+                processData: false,
+                enctype: "multipart/form-data",
+                success: function (response) {
+                    // 성공적으로 데이터를 전송한 경우 실행할 코드
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        })
+    });
+</script>
+</body>
+</html>

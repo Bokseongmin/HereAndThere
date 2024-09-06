@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <script th:src="@{/js/ckEditor/ckeditor.js}"></script>
+</head>
+<body>
+<div class="container">
+    <header th:replace="fragments/header :: header"></header>
+    <main>
+        <div class="row justify-content-center">
+            <div class="col-sm-5">
+                <div class="card my-5 border border-primary">
+                    <div class="card-header bg-primary text-white">
+                        리뷰
+                    </div>
+                    <div class="card-body">
+                        <form id="signUp">
+                            <div class="mb-3">
+                                <label class="form-label" for="title">제목</label>
+                                <input type="text" class="form-control" id="title" name="title"
+                                       placeholder="제목"
+                                       required="required">
+                            </div>
+                            <div class="mb-3">
+                                <label for="_tourist_list_search" class="form-label">관광지</label>
+                                <div id="route" class="mb-3"></div>
+                                <input type="text" class="form-control" id="_tourist_list_search"
+                                       name="_tourist_list_search" placeholder="관광지">
+                                <div id="_tourist_list_search_list" class="mb-0"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="content">내용</label>
+                                <textarea rows="5" cols="50" id="content" name="content">
+
+                                </textarea>
+                                <script>
+                                    var ckeditor_config = {
+                                        resize_enaleb: false,
+                                        enterMode: CKEDITOR.ENTER_BR,
+                                        shiftEnterMode: CKEDITOR.ENTER_P,
+                                        filebrowserUploadUrl: "/admin/goods/ckUpload"
+                                    };
+
+                                    CKEDITOR.replace("content", ckeditor_config);
+                                </script>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="file_name">사진</label>
+                                <input type="file" class="form-control" id="file_name" name="file_name" accept=".jpg, .png"
+                                       multiple>
+                            </div>
+                            <button type="submit" class="form-control btn btn-primary">등록</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        $("#_tourist_list_search").keyup(function () {
+            var tourist_attr = $(this).val();
+
+            $.ajax({
+                type: "GET",
+                url: "/together/write/get/tourist/" + tourist_attr,
+                success: function (response) {
+                    var tour_lists = response.body;
+                    var list = $("#_tourist_list_search_list");
+                    list.empty();
+                    for (var i = 0; i < tour_lists.length; i++) {
+                        var _item = $("<div>").text(tour_lists[i].name);
+                        _item.addClass("items");
+                        list.append(_item);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(xhr.responseText);
+                }
+            });
+        });
+
+        $("#_tourist_list_search_list").on("click", ".items", function () {
+            var selected = $(this).text();
+            var routes = $("#route");
+            var _route = $("<div>").text(selected);
+            routes.empty();
+            _route.addClass("route");
+            _route.attr("data-name", selected);
+            _route.attr("id", "selected");
+            routes.append(_route);
+            $("#_tourist_list_search_list").empty();
+            $("#_tourist_list_search").val("");
+        });
+
+        $(document).on("click", ".route", function () {
+            $(this).remove();
+        });
+
+        $("form").submit(function (e) {
+            e.preventDefault();
+
+            var form_data = new FormData();
+
+            var data = {
+                title: $("#title").val(),
+                tourist_attr_name: $("#selected").attr("data-name"),
+                content: CKEDITOR.instances.content.getData(),
+
+            };
+            var file_name = $("#file_name"); // 파일 필드에서 선택된 파일을 가져옴
+            for (var i = 0; i < file_name.length; i++) {
+                if (file_name[i].files.length > 0) {
+                    for (var j = 0; j < file_name[i].files.length; j++) {
+                        form_data.append("file_name", $("#file_name")[i].files[j]);
+                    }
+                }
+            }
+
+            form_data.append("review", new Blob([JSON.stringify(data)], {type: "application/json"}));
+            $.ajax({
+                type: "POST",
+                url: "/review/write",
+                data: form_data,
+                contentType: false,
+                processData: false,
+                enctype: "multipart/form-data",
+                success: function (response) {
+                    window.location.href = "/";
+                },
+                error: function (xhr, status, error) {
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

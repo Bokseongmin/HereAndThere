@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <!-- GOOGLE -->
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${apiKey}"></script>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+        <aside th:replace="admin/fragments/aside :: aside"></aside>
+    </div>
+    <main class="container">
+        <div class="form-group">
+            <div>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr class="text-center">
+                        <th style="width: 5%">NO.</th>
+                        <th style="width: 10%">제목</th>
+                        <th style="width: 10%">카테고리</th>
+                        <th style="width: 35%">내용</th>
+                        <th style="width: 15%">도로명 주소</th>
+                        <th style="width: 15%">지번 주소</th>
+                        <th style="width: 10%">전화번호</th>
+                    </tr>
+                    </thead>
+                    <tbody id="get_list">
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center">
+                <nav>
+                    <ul class="pagination justify-content-center" id="pages">
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+    <div class="container" id="footer">
+        <footer th:replace="fragments/footer :: footer"></footer>
+    </div>
+</div>
+<script>
+    $(function () {
+        var page = 0
+        load_attrs(1);
+
+        $("#tagname").keypress(function (event) {
+            var $input = $(event.target),
+                tagMap = $input.data("tagMap") || {},
+                keyCode = event.keyCode || event.which,
+                value;
+
+            $input.data("tagMap", tagMap);
+
+            if (keyCode === 32) {
+                value = $.trim($input.val());
+                if (value !== "" && tagMap[value] === undefined) {
+                    tagMap[value] = 1;
+                    $("#tags").append($("<div>").addClass("tag").html(value));
+                    $input.val('');
+                }
+            }
+        });
+
+        $("#tags").on("click", ".tag", function (event) {
+            var $tag = $(event.target),
+                tagText = $.trim($tag.text());
+
+            $tag.remove();
+            delete $("#tagname").data("tagMap")[tagText];
+        });
+    });
+
+    function load_attrs(page) {
+        $.ajax({
+            type: "GET",
+            url: "/admin/tour_list/get",
+            data: {
+                page: page,
+                size: 10,
+            },
+            success: function (response) {
+                var tour_lists = response.body.tourist;
+                var list = "";
+                var page = "";
+                $("#get_list").empty();
+                for (var i = 0; i < tour_lists.length; i++) {
+                    var tour = tour_lists[i];
+                    list += "<tr class='align-content-center justify-content-center text-center' id='item-" + tour.id + "'>";
+                    list += "<td>" + tour.id + "</td>";
+                    list += "<td><a href='/admin/tour_list/" + tour.id + "'>" + tour.name + "</a></td>";
+                    list += "<td>" + tour.category_name + "</td>";
+                    list += "<td>" + tour.content + "</td>";
+                    list += "<td>" + tour.road_address + "</td>";
+                    list += "<td>" + tour.parcel_address + "</td>";
+                    list += "<td>" + tour.tel + "</td>";
+                    list += "</tr>";
+                }
+                $("#get_list").html(list);
+                $("#pages").empty();
+                page += "<li class='page-item'>"
+                page += "<a class='page-link' onclick='load_attrs(" + (response.body.current - 1) + ")'><<</a>"
+                page += "</li>";
+                for (var i = response.body.start; i <= response.body.end; i++) {
+                    if (i === response.body.current) {
+                        page += "<li class='page-item active'><a class='page-link' onclick='load_attrs(" + i + ")'>" + i + "</a></li>";
+                    } else {
+                        page += "<li class='page-item'><a class='page-link' onclick='load_attrs(" + i + ")'>" + i + "</a></li>";
+                    }
+                }
+                page += "<li class='page-item'>"
+                page += "<a class='page-link' onclick='load_attrs(" + (response.body.current + 1) + ")'>>></a>"
+                page += "</li>";
+                $("#pages").html(page);
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+</script>
+</body>
+</html>

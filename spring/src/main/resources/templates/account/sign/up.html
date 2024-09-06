@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+    </div>
+    <main>
+        <div class="row justify-content-center">
+            <div class="col-sm-5">
+                <div class="card my-5 border border-primary">
+                    <div class="card-header bg-primary text-white">
+                        회원가입
+                    </div>
+                    <div class="card-body">
+                        <form id="signUp">
+                            <div class="mb-3">
+                                <label class="form-label" for="user_name">이름</label>
+                                <input type="text" class="form-control" id="user_name" name="user_name"
+                                       placeholder="홍길동"
+                                       required="required">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="user_email">이메일</label>
+                                <input type="email" class="form-control" id="user_email" name="user_email"
+                                       placeholder="sample@cu.ac.kr" required="required">
+                                <p class="text-danger" id="user_email_msg">이메일을 확인해주세요</p>
+                                <button type="button" class="btn btn-primary" id="user_email_check">중복확인</button>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="user_pass">비밀번호</label>
+                                <input type="password" class="form-control" id="user_pass" name="user_pass"
+                                       placeholder="****"
+                                       required="required">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="user_pass_check">비밀번호 확인</label>
+                                <input type="password" class="form-control" id="user_pass_check" name="user_pass_check"
+                                       placeholder="****" required="required">
+                                <p class="text-danger" id="user_pass_msg">비밀번호를 확인해주세요</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="user_region">지역</label>
+                                <select class="form-control" id="user_region" name="user_region">
+                                    <option th:each="region: ${regions}" th:text="${region.name}"
+                                            th:value="${region.id}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="error_msg">
+
+                            </div>
+                            <button type="submit" class="form-control btn btn-primary" id="sign_up_btn" disabled>등록
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        $("#user_email_check").click(function () {
+            var data = {
+                user_email: $("#user_email").val()
+            };
+            var json = JSON.stringify(data);
+            $.ajax({
+                type: "POST",
+                url: "/account/sign/email_check",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: json,
+                success: function (response) {
+                    if (response.head.result_code === "400" || $("#user_email").val() === "") {
+                        $("#user_email_msg").text("사용 불가한 이메일입니다.");
+                        $("#user_email_msg").removeClass("text-success").addClass("text-danger");
+                        $("#sign_up_btn").attr("disabled", "disabled");
+                    } else {
+                        $("#user_email_msg").text("사용 가능한 이메일입니다.");
+                        $("#user_email_msg").removeClass("text-danger").addClass("text-success");
+                        $("#sign_up_btn").removeAttr("disabled");
+                    }
+                }
+            });
+        });
+
+        $("#user_email").keyup(function () {
+            $("#user_email_msg").text("이메일을 확인해주세요.");
+            $("#user_email_msg").removeClass("text-success").addClass("text-danger");
+            $("#sign_up_btn").attr("disabled", "disabled");
+        });
+
+        $("#user_pass, #user_pass_check").keyup(function () {
+            var pass1 = $("#user_pass").val();
+            var pass2 = $("#user_pass_check").val();
+            if (pass1 != "" || pass2 != "") {
+                if (pass1 == pass2) {
+                    $("#user_pass_msg").text("일치");
+                    $("#user_pass_msg").removeClass("text-danger").addClass("text-success");
+                    $("#sign_up_btn").removeAttr("disabled");
+                } else {
+                    $("#user_pass_msg").text("불일치");
+                    $("#user_pass_msg").removeClass("text-success").addClass("text-danger");
+                    $("#sign_up_btn").attr("disabled", "disabled");
+                }
+            }
+        });
+
+        $("#signUp").submit(function (e) {
+            e.preventDefault();
+
+            var data = {};
+            $(this).find("input").each(function () {
+                var name = $(this).attr("name");
+                var value = $(this).val();
+
+                if (name) {
+                    data[name] = value;
+                }
+            });
+
+            $(this).find("select").each(function () {
+                var name = $(this).attr("name");
+                var value = $(this).val();
+
+                if (name) {
+                    data[name] = value;
+                }
+            });
+
+            var json = JSON.stringify(data);
+            $.ajax({
+                type: "POST",
+                url: "/account/sign/up",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: json,
+                success: function (response) {
+                    if (response.head.result_code === "400") {
+                        var html = "<p class='text-danger'>이미 등록된 계정입니다.</p>"
+                        $("#error_msg").html(html);
+                    } else {
+                        window.location.href = "/account/sign/in";
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

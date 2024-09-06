@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<nav th:fragment="nav" class="container mt-3">
+    <div class="d-flex row align-items-center justify-content-end">
+        <div class="col-9 d-flex justify-content-center">
+            <div class="input-group align-items-center" style="position: relative;">
+                <input type="text" class="form-control" id="search_input" placeholder="..."
+                       aria-label="Here And There" aria-describedby="search_btn">
+                <ul class="dropdown-menu w-100" id="search_list" style="position: absolute; top: 100%;"></ul>
+                <button class="btn btn-primary" type="button" id="search_btn">검색</button>
+            </div>
+        </div>
+        <div class="col-2 d-flex justify-content-center">
+            <a class="btn btn-primary" href="/course/write">새 글 작성</a>
+        </div>
+    </div>
+</nav>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <style>
+    </style>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+        <nav th:replace="pages/course/fragments/nav :: nav"></nav>
+    </div>
+    <main class="container mt-3">
+        <div class="d-flex row justify-content-center">
+            <div class="col-md-6" id="content">
+                <div class="" id="course_list">
+                    <ul class="list-group" id="cards">
+
+                    </ul>
+                </div>
+                <div class="text-center mt-3">
+                    <nav>
+                        <ul class="pagination justify-content-center" id="pages">
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    var page = 0;
+    $(function () {
+        load_card(1);
+    });
+    function load_card(page) {
+        $.ajax({
+            url: "/course/list",
+            method: "GET",
+            data: {
+                page: page,
+                size: 10,
+            },
+            success: function (response) {
+                var list = response.body.course;
+                console.log(list)
+                console.log(response)
+                $("#cards").empty();
+                if (list != null && list.length > 0) {
+                    $("#cards").empty();
+                    $.each(list, function (i, item) {
+                        var _item = "";
+                        var regdate = "";
+                        var date = new Date(item.regdate);
+
+                        if (item.regdate != null) {
+                            regdate = converter_date(date);
+                        }
+
+                        _item += "<a class='text-decoration-none' href='/course/detail/" + item.id + "'>";
+                        _item += "<li class='list-group-item d-flex justify-content-between align-items-start'>";
+                        _item += "<div class='ms-2 me-auto'>";
+                        _item += "<div class='fw-bold'>" + item.title + "</div>";
+
+                        var maxLength = 50;
+                        var content = item.content;
+                        if (content.length > maxLength) {
+                            content = content.substr(0, maxLength) + " ...";
+                        }
+                        _item += content;
+
+                        _item += "</div>";
+                        _item += "<div class='text-muted'>";
+                        _item += "<small>" + regdate + "</small><br>";
+                        _item += "<small>작성자: " + item.user_name + "</small>";
+                        _item += "</div>";
+                        _item += "</li></a>";
+
+                        $("#cards").append(_item);
+                    });
+                    load_page(response.body);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function load_page(response) {
+        console.log(response)
+        $("#pages").empty();
+        var nav_page = "";
+        nav_page += "<li class='page-item'>"
+        nav_page += "<a class='page-link' onclick='load_card(" + (response.current - 1) + ")'><<</a>"
+        nav_page += "</li>";
+        for (var i = response.start; i <= response.end; i++) {
+            if (i === response.current) {
+                nav_page += "<li class='page-item active'><a class='page-link' onclick='load_card(" + i + ")'>" + i + "</a></li>";
+            } else {
+                nav_page += "<li class='page-item'><a class='page-link' onclick='load_card(" + i + ")'>" + i + "</a></li>";
+            }
+        }
+        nav_page += "<li class='page-item'>"
+        nav_page += "<a class='page-link' onclick='load_card(" + (response.current + 1) + ")'>>></a>"
+        nav_page += "</li>";
+        $("#pages").html(nav_page);
+    }
+</script>
+</body>
+</html>

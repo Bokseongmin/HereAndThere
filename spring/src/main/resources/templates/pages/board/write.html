@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <!-- CK Editor -->
+    <script th:src="@{/js/ckEditor/build/ckeditor.js}"></script>
+    <script th:src="@{/js/ckEditor/ckeditor5-image/build/image.js}"></script>
+    <script th:src="@{/js/ckEditor/UploadAdapter.js}"></script>
+    <!-- Swiper -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-element-bundle.min.js"></script>
+
+    <style>
+        swiper-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        swiper-container {
+            width: 100%;
+            height: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        swiper-slide {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .mySwiper {
+            height: 80%;
+            width: 100%;
+        }
+
+        .mySwiper2 {
+            height: 20%;
+            box-sizing: border-box;
+            padding: 10px 0;
+        }
+
+        .mySwiper2 swiper-slide {
+            width: 25%;
+            height: 100%;
+            opacity: 0.4;
+        }
+
+        .mySwiper2 .swiper-slide-thumb-active {
+            opacity: 1;
+        }
+
+        swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <header th:replace="fragments/header :: header"></header>
+    <main class="container">
+        <div class="row justify-content-center">
+            <div class="col-sm-5">
+                <div class="card my-5 border border-primary">
+                    <div class="card-header bg-primary text-white">
+                        게시판
+                    </div>
+                    <div class="card-body">
+                        <form id="write">
+                            <div class="mb-3">
+                                <label class="form-label" for="title">제목</label>
+                                <input type="text" class="form-control" id="title" name="title"
+                                       placeholder="제목"
+                                       required="required">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="content">내용</label>
+                                <textarea rows="5" cols="50" id="content" name="content">
+
+                                </textarea>
+                                <script>
+                                    let test;
+
+                                    function MyCustomUploadAdapterPlugin(editor) {
+                                        editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+                                            return new UploadAdapter(loader)
+                                        }
+                                    }
+
+                                    ClassicEditor.create(document.querySelector("#content"), {
+                                        resizeOptions: [
+                                            {
+                                                name: 'resizeImage:original',
+                                                value: null,
+                                                label: 'Original'
+                                            }
+                                        ],
+                                        language: "ko",
+                                        extraPlugins: [MyCustomUploadAdapterPlugin]
+                                    }).then(editor => {
+                                        window.editor = editor;
+                                    }).catch(error => {
+                                        console.error(error);
+                                    });
+                                </script>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="file_name">사진</label>
+                                <input type="file" class="form-control" id="file_name" name="file_name" accept=".jpg, .png"
+                                       multiple>
+                            </div>
+                            <div class="mb-3" id="swiper" style="display: none">
+                                <swiper-container id="mySwiper1"
+                                                  style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff"
+                                                  class="mySwiper" thumbs-swiper=".mySwiper2" space-between="10"
+                                                  navigation="true">
+                                </swiper-container>
+
+                                <swiper-container id="mySwiper2" class="mySwiper2" space-between="10" slides-per-view="4"
+                                                  free-mode="true"
+                                                  watch-slides-progress="true">
+                                </swiper-container>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="user_region">지역</label>
+                                <select class="form-control" id="user_region" name="user_region">
+                                    <option th:each="region: ${regions}" th:text="${region.name}"
+                                            th:value="${region.id}"></option>
+                                </select>
+                            </div>
+                            <div class="mb-3" id="error_msg">
+
+                            </div>
+                            <button type="submit" class="form-control btn btn-primary" id="add_board">등록
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        $("#img").change(function () {
+            $("#swiper").toggle();
+            if (this.files && this.files[0]) {
+                var html = "";
+                for (var i = 0; i < this.files.length; i++) {
+                    var reader = new FileReader;
+                    reader.onload = function (data) {
+                        html += "<swiper-slide>";
+                        html += "<img src='" + data.target.result + "'/>";
+                        html += "</swiper-slide>";
+                        $("#mySwiper1").html(html);
+                        $("#mySwiper2").html(html);
+                    }
+                    reader.readAsDataURL(this.files[i]);
+                }
+            }
+        });
+        $("#write").submit(function(e) {
+            e.preventDefault(); // 폼 제출 기본 동작 중단
+
+            var form_data = new FormData();
+
+            var title = $("#title").val(); // 제목 필드의 값을 가져옴
+            var content = CKEDITOR.instances.content.getData(); // 내용 필드의 CKEditor 내용을 가져옴
+            var file_name = $("#file_name"); // 파일 필드에서 선택된 파일을 가져옴
+            var user_region = $("#user_region").val(); // 지역 필드의 값을 가져옴
+
+            var data = {
+                title: title,
+                content: content,
+                user_region: user_region
+            };
+
+            for (var i = 0; i < file_name.length; i++) {
+                if (file_name[i].files.length > 0) {
+                    for (var j = 0; j < file_name[i].files.length; j++) {
+                        form_data.append("file_name", $("#file_name")[i].files[j]);
+                    }
+                }
+            }
+            form_data.append("board", new Blob([JSON.stringify(data)], {type: "application/json"}));
+            $.ajax({
+                type: "POST",
+                url: "/board/write",
+                data: form_data,
+                contentType: false,
+                processData: false,
+                enctype: "multipart/form-data",
+                success: function (response) {
+                    window.location.href = "/together/list";
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

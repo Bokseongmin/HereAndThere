@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="false"/>
+        <setting name="cacheEnabled" value="false"/>
+    </settings>
+    <typeAliases>
+        <typeAlias type="com.mz.hat.vo.TouristAttrVo" alias="TouristAttrVo" />
+        <typeAlias type="com.mz.hat.vo.UserVo" alias="UserVo" />
+        <typeAlias type="com.mz.hat.vo.TagVo" alias="TagVo" />
+        <typeAlias type="com.mz.hat.vo.UserTagVo" alias="UserTagVo" />
+        <typeAlias type="com.mz.hat.vo.ReplyVo" alias="ReplyVo" />
+        <typeAlias type="com.mz.hat.vo.CourseVo" alias="CourseVo" />
+        <typeAlias type="com.mz.hat.vo.CoordVo" alias="CoordVo"/>
+    </typeAliases>
+</configuration>

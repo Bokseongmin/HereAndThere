@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <div class="container">
+        <header th:replace="fragments/header :: header"></header>
+        <aside th:replace="admin/fragments/aside :: aside"></aside>
+    </div>
+    <main class="container">
+        <div class="form-group">
+            <div>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr class="text-center">
+                        <th style="width: 5%">NO.</th>
+                        <th style="width: 10%">제목</th>
+                        <th style="width: 10%">카테고리</th>
+                        <th style="width: 35%">내용</th>
+                        <th style="width: 15%">도로명 주소</th>
+                        <th style="width: 15%">지번 주소</th>
+                        <th style="width: 10%">전화번호</th>
+                    </tr>
+                    </thead>
+                    <tbody id="get_list">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <div class="container" id="footer">
+        <footer th:replace="fragments/footer :: footer"></footer>
+    </div>
+</div>
+<script>
+    $(function () {
+
+    });
+</script>
+</body>
+</html>

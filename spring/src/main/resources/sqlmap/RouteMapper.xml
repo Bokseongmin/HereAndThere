@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.CourseMapper">
+    <insert id="write" parameterType="com.mz.hat.vo.RouteVo">
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        INSERT INTO routes (user_id, tourist_attrs_list, reg_date)
+        VALUES (#{user_id}, #{tourist_attrs_list}, now())
+    </insert>
+
+    <select id="info" resultType="com.mz.hat.vo.RouteVo">
+        SELECT id, user_id, tourist_attrs_list, reg_date, mod_date
+        FROM routes
+        WHERE id = #{id}
+    </select>
+</mapper>

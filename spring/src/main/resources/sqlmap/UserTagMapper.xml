@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.UserTagMapper">
+
+    <!-- 각 관광지 별 태그 조회 -->
+    <select id="list" parameterType="int" resultType="UserTagVo">
+        SELECT ut.tag_id, MIN(ut.id) as id, ut.tour_id, t.id, t.tag_kor, t.tag_eng
+        FROM user_tags ut
+                 INNER JOIN tags t ON ut.tag_id = t.id
+        WHERE ut.tour_id = #{tour_id}
+        GROUP BY ut.tag_id, ut.tour_id, t.id, t.tag_kor, t.tag_eng;
+    </select>
+
+    <!-- 관광지 별 태그 조회 -->
+    <select id="get" parameterType="int" resultType="UserTagVo">
+        SELECT DISTINCT tour_id, tag_id
+        FROM user_tags
+        WHERE tour_id = #{tour_id}
+    </select>
+
+    <!-- 유저별 태그 조회 -->
+    <select id="info" parameterType="UserTagVo" resultType="UserTagVo">
+        SELECT *
+        FROM user_tags
+        WHERE
+            tour_id = #{tour_id}
+        <if test="user_id != null and user_id !=''">
+            AND user_id = #{user_id}
+        </if>
+        <if test="ip_address != null and ip_address !=''">
+            AND ip_address = #{ip_address}
+        </if>
+    </select>
+
+    <!-- 태그 등록 -->
+    <insert id="add" parameterType="UserTagVo">
+        INSERT INTO user_tags(tag_id, tour_id, user_id, ip_address, regdate)
+        VALUES(#{tag_id}, #{tour_id}, #{user_id}, #{ip_address}, now())
+    </insert>
+
+    <delete id="delete" parameterType="UserTagVo">
+        DELETE
+        FROM user_tags
+        WHERE tag_id = #{tag_id}
+          AND tour_id = #{tour_id}
+        <if test="user_id != null and user_id !=''">
+            AND user_id = #{user_id}
+        </if>
+        <if test="ip_address != null and ip_address !=''">
+            AND ip_address = #{ip_address}
+        </if>
+    </delete>
+</mapper>

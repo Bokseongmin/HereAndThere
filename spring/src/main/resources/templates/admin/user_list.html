@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <div class="container">
+        <header th:replace="fragments/header :: header"></header>
+        <aside th:replace="admin/fragments/aside :: aside"></aside>
+    </div>
+    <main class="container">
+        <div class="form-group">
+            <div>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr class="text-center">
+                        <th style="width: 15%">NO.</th>
+                        <th style="width: 10%">이름</th>
+                        <th style="width: 30%">이메일</th>
+                        <th style="width: 10%">지역</th>
+                        <th style="width: 10%">프로필 사진</th>
+                        <th style="width: 10%">권한</th>
+                        <th style="width: 15%">가입일자</th>
+                    </tr>
+                    </thead>
+                    <tbody id="get_list">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <div class="container" id="footer">
+        <footer th:replace="fragments/footer :: footer"></footer>
+    </div>
+</div>
+<script>
+    $(function () {
+        $.ajax({
+            url: "/admin/user_list/get",
+            type: "GET",
+            success: function (response) {
+                // 성공적으로 데이터를 전송한 경우 실행할 코드
+                var users = response.body;
+                var html = "";
+                for(var i = 0; i < users.length; i++) {
+                    var user = users[i];
+                    html += "<tr class='align-content-center justify-content-center text-center' id='item-" + user.id + "'>";
+                    html += "<td>" + user.id + "</td>";
+                    html += "<td>" + user.user_name + "</td>";
+                    html += "<td>" + user.user_email + "</td>";
+                    html += "<td>" + user.user_region + "</td>";
+                    html += "<td><img src='' style='height: 160px; width: 260px;' class='card-img-top' alt='...'></td>";
+                    html += "<td>" + user.role + "</td>";
+                    html += "<td>" + user.reg_date + "</td>";
+                    html += "</tr>";
+                }
+                $("#get_list").html(html);
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+</script>
+</body>
+</html>

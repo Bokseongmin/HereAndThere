@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Morpheus Start</title>
+    <style>
+      .container {
+        margin: 0 1rem;
+      }
+
+      .container > div {
+        margin-bottom: 0.5rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Write Target URL</h1>
+      <div>
+        <label>url :</label>
+        <input id="ipt-url" type="text" />
+        <button id="btn-move" onclick="__move()">Move</button>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript" src="../js/mcore.min.js"></script>
+  <script type="text/javascript">
+    M.onReady(function (e) {
+      var history = M.data.storage("targetUrl") || "http://";
+      var $iptUrl = document.getElementById("ipt-url");
+      $iptUrl.value = history;
+
+      window.__move = function () {
+        var url = $iptUrl.value;
+        M.data.storage("targetUrl", url);
+        M.page.html({
+          url: url,
+          actionType: "CLEAR_TOP",
+        });
+      };
+    });
+  </script>
+</html>

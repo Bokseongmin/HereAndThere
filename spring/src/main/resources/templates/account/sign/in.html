@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+    </div>
+    <main>
+        <div class="row justify-content-center">
+            <div class="col-sm-5">
+                <div class="card my-5 border border-primary">
+                    <div class="card-header bg-primary text-white">
+                        로그인
+                    </div>
+                    <div class="card-body">
+                        <form id="signIn">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">이메일</label>
+                                <input type="email" class="form-control" id="email" name="user_email"
+                                       placeholder="test@test.com">
+                            </div>
+                            <div class="mb-3">
+                                <label for="pass" class="form-label">비밀번호</label>
+                                <input type="password" class="form-control" id="pass" name="user_pass"
+                                       placeholder="****">
+                            </div>
+                            <div class="mb-3" id="errorMsg">
+
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">로그인</button>
+                                <a href="/account/sign/up">아직 회원이 아니신가요?</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+</div>
+<script>
+    $(function () {
+        $("#signIn").submit(function (e) {
+            e.preventDefault();
+
+            var data = {};
+            $(this).find("input").each(function () {
+                var name = $(this).attr("name");
+                var value = $(this).val();
+
+                if (name) {
+                    data[name] = value;
+                }
+            });
+            var json = JSON.stringify(data);
+            $.ajax({
+                type: "POST",
+                url: "/account/sign/in",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data: json,
+                success: function (response) {
+                    if (response.head.result_code === "200") {
+                        window.location.href = "/";
+                    } else {
+                        var html = "<p class='text-danger'>등록된 사용자 또는 아이디, 비밀번호가 올바르지 않습니다.</p>"
+                        $("#errorMsg").html(html);
+                    }
+                },
+                error: function (xhr, status, error) {
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

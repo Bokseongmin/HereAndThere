@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+    <!-- GOOGLE -->
+    <script th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${apiKey}"></script>
+</head>
+<body>
+<div class="flex-wrap">
+    <div>
+        <header th:replace="fragments/header :: header"></header>
+        <aside th:replace="admin/fragments/aside :: aside"></aside>
+    </div>
+    <main class="container">
+            <!-- 메인 내용 작성 -->
+            <h1>저장된 데이터</h1>
+            <canvas id="myChart"></canvas>
+    </main>
+    <div class="container" id="footer">
+        <footer th:replace="fragments/footer :: footer"></footer>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2"></script>
+<script>
+    $(function () {
+        $.ajax({
+            url: "/admin/category/get_cnt",
+            method: "GET",
+            success: function(response) {
+                // Update the chart with the received data
+                $("<h2>").text(response.body["전체"]).insertAfter("h1");
+                delete response.body["전체"];
+                updateChart(response.body);
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        function updateChart(data) {
+            var ctx = document.getElementById("myChart").getContext("2d");
+            var myChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: "Data",
+                        data: Object.values(data),
+                        backgroundColor: "rgba(54, 162, 235, 0.5)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 50,
+                            ticks: {
+                                stepSize: 10
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

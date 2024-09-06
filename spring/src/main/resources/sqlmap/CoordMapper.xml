@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mz.hat.dao.CoordMapper">
+    <insert id="insertCoords_course" parameterType="CoordVo">
+        INSERT INTO coords_course(entity_id, lat, lng, regdate)
+        VALUES (#{entity_id}, #{lat}, #{lng}, now())
+    </insert>
+
+    <insert id="insertCoords_together" parameterType="CoordVo">
+        INSERT INTO coords_course(entity_id, lat, lng, regdate)
+        VALUES (#{entity_id}, #{lat}, #{lng}, now())
+    </insert>
+
+    <select id="findByCourse_id" parameterType="int" resultType="CoordVo">
+        SELECT *
+        FROM coords_course
+        WHERE entity_id = #{entity_id}
+    </select>
+
+    <select id="findByTogether_id" parameterType="int" resultType="CoordVo">
+        SELECT *
+        FROM coords_together
+        WHERE id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Here And There</title>
+    <th:block th:replace="fragments/head :: head"></th:block>
+</head>
+<body>
+<div class="flex-wrap">
+    <header th:replace="fragments/header :: header"></header>
+    <main class="container">
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="true" href="#">모든 글</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">인기 글</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">추천 글</a>
+                    </li>
+                    <li class="nav-item justify-content-end text-end">
+                        <a class="nav-link" href="/board/write">글 쓰기</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="m-3">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4" id="cards">
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="fragments/footer :: footer"></footer>
+    <a href="write">dfsdf</a>
+</div>
+<script>
+    $(function () {
+        var page = 1;
+        function load() {
+            var isLoading = false;
+
+            if (isLoading) {
+                return;
+            }
+
+            isLoading = true;
+
+            $.ajax({
+                type: "GET",
+                url: "/board/list/get",
+                data: {
+                    page: page
+                },
+                success: function(response) {
+                    var body = response.body; // body 배열 가져오기
+                    for (var i = 0; i < body.length; i++) {
+                        var html = "";
+                        html += "<div class='col'>";
+                        html += "<div class='card'>";
+                        if (body[i].images.length > 0) {
+                            var image_path = body[i].images[0].image_path;
+                            html += "<img src='/images/" + image_path + "' class='card-img-top' style='' alt='...' style='width: 100%; height: 12em; object-fit: cover;'>";
+                        }
+                        html += "<div class='card-body'>";
+                        html += "<h5 class='card-title'>" + (body[i].title || "") + "</h5>";
+                        html += "<p class='card-text'>" + (body[i].content || "") + "</p>";
+                        html += "</div>";
+                        html += "<ul class='list-group list-group-flush'>";
+                        html += "<li class='list-group-item'>" + body[i].user_name + "</li>";
+                        html += "<li class='list-group-item'>" + converter_date(body[i].reg_date) + "</li>";
+                        html += "</ul>";
+                        html += "<div class='card-body'>";
+                        html += "<a href='/board/" + body[i].id + "' class='card-link'>더보기</a>";
+                        html += "<a href='#' class='card-link'></a>";
+                        html += "</div>";
+                        html += "</div>";
+                        html += "</div>";
+                        $("#cards").append(html);
+                    }
+                    page++; // 페이지 번호 증가
+                    isLoading = false; // 로딩 상태 변경
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        load();
+
+        $(window).scroll(function () {
+            // 스크롤이 화면 아래쪽에 위치할 때 AJAX 요청을 보냅니다.
+            if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+                load();
+            }
+        });
+    });
+</script>
+</body>
+</html>
